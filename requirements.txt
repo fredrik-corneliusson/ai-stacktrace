@@ -1,0 +1,9 @@
+# Webb app
+fastapi[all]
+uvicorn[standard]
+
+# traceback analyzer
+python-dotenv
+langchain
+openai
+levenshtein
