@@ -1,6 +1,8 @@
 # Webb app
 fastapi[all]
 uvicorn[standard]
+# for aws
+gunicorn
 
 # traceback analyzer
 python-dotenv
