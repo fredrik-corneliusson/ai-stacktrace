@@ -1,6 +1,9 @@
 # ai-stacktrace
 Analyze stack trace app
 
+## TODO:
+Check out this library instead for the server app:
+https://github.com/ajndkr/lanarky
 
 ## Add .env
 Setup .env file:
