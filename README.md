@@ -20,6 +20,7 @@ npm run dev
 ```
 
 ## AWS EC2
+Nginx routing svelte nodejs web on root and fast-api for the websocket  
 (venv) [ec2-user@ip-172-31-6-210 ai-stacktrace]$ sudo cat /etc/nginx/conf.d/stack.ai.conf
 ```
 server {
@@ -28,8 +29,10 @@ server {
     access_log  /var/log/nginx/access.log;
     error_log  /var/log/nginx/error.log;
     location / {
-        proxy_pass http://127.0.0.1:9000;
-        proxy_buffering off;
+        proxy_pass http://127.0.0.1:8080;
+        auth_basic "Restricted Access";
+        auth_basic_user_file /etc/nginx/passwords;
+        #proxy_buffering off;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -60,3 +63,19 @@ ExecStart=/home/ec2-user/projects/ai-stacktrace/venv/bin/uvicorn app:app --host 
 [Install]
 WantedBy=multi-user.target
 ```
+
+Start svelte webservice:
+```
+[ec2-user@ip-172-31-6-210 svelte-app]$ sudo cat /etc/systemd/system/stack-ai-app-web.service
+[Unit]
+Description=Svelte web server for stack-ai analysis
+After=network.target
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/projects/ai-stacktrace/svelte-app
+ExecStart=/home/ec2-user/projects/ai-stacktrace/svelte-app/start.sh
+[Install]
+WantedBy=multi-user.target
+```
+
