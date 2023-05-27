@@ -14,7 +14,7 @@
     function sendText() {
         loading = true;
         messages = [];
-//        let ws = new WebSocket('ws://localhost:8000/ws');
+        //let ws = new WebSocket('ws://localhost:8000/ws');
         let ws = new WebSocket('wss://stack.ai.bitflip.guru/ws/');
 
         ws.onopen = function() {

@@ -9,3 +9,5 @@ python-dotenv
 langchain
 openai
 levenshtein
+# for test-ws.py
+websockets

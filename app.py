@@ -1,7 +1,6 @@
 from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import asyncio
 
 from dotenv import load_dotenv
 
@@ -36,6 +35,6 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_text()
-        for message in analyze(data, 0.5, 2, 0.0):
+        async for message in analyze(data, 0.5, 2, 0.0):
             await websocket.send_json(message.dict())
         await websocket.send_json({'status': 'completed'})
