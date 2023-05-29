@@ -1,48 +1,17 @@
-import json
-import requests
-from jose import jwt
-from fastapi import FastAPI, WebSocket, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
+import json
+
+from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from auth import decode_token
+
 from traceback_analyser import analyze
 
-region = 'eu-north-1'
-userPoolId = 'eu-north-1_5614uLBuF'
-
-
-def get_public_key(token):
-    header = jwt.get_unverified_header(token)
-    jwks_url = f"https://cognito-idp.{region}.amazonaws.com/{userPoolId}/.well-known/jwks.json"
-    jwks = requests.get(jwks_url).json()
-    rsa_key = [k for k in jwks['keys'] if k['kid'] == header['kid']][0]
-    return rsa_key
-
-
-def decode_token(token):
-    key = get_public_key(token)
-    try:
-        payload = jwt.decode(token, key, algorithms=['RS256'])
-    except jwt.JWTError:
-        raise HTTPException(status_code=403, detail="Invalid token")
-    return payload
-
-
-class TextItem(BaseModel):
-    text: str
-
-
 app = FastAPI()
-
-
-class Message(BaseModel):
-    status: str
-    message: str
-
 
 # Add middleware
 app.add_middleware(
@@ -73,8 +42,19 @@ async def websocket_endpoint(websocket: WebSocket):
 
     # Verify the token (This is a simplification, make sure to handle exceptions in real code)
     # payload = jwt.decode(token, os.getenv('JWT_SECRET'), algorithms=['RS256'])
-    payload = decode_token(token)
-    print(payload)
+    try:
+        payload = decode_token(token)
+        print(payload)
+    except HTTPException as e:
+        print(e)
+        await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": "Invalid token"})
+        await websocket.close()
+        raise
+    except Exception as e:
+        print(e)
+        await websocket.send_json({'status': 'error', "status_code": 500, "message": f"Exception: {e}"})
+        await websocket.close()
+        raise
 
     while True:
         data = await websocket.receive_text()

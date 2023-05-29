@@ -14,6 +14,9 @@ OPENAI_API_KEY=...
 ## start fastapi
 ```
 uvicorn app:app --reload
+
+Debug mode:
+uvicorn app:app --reload --log-level debug
 ```
 
 ## start svelte

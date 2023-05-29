@@ -1,5 +1,6 @@
 <script>
     import Spinner from './Spinner.svelte';
+    import {navigate} from "svelte-routing";
 
     let textAreaValue = '';
 
@@ -42,7 +43,17 @@
                 if(data.status === 'completed') {
                     loading = false;
 
-                } else {
+                } else if(data.status === 'error') {
+                    loading = false
+                    console.log("Error: ${data.status_code} ${data.message}");
+                    if (data.status_code === 403) {
+                        console.log("Invalid token, redirecting to login");
+                        localStorage.removeItem('token');
+                        navigate('/login');
+
+                    }
+                }
+                else {
                     messages = [...messages, data];
                 }
             } catch(error) {
