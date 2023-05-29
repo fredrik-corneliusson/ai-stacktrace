@@ -11,3 +11,6 @@ openai
 levenshtein
 # for test-ws.py
 websockets
+# for auth
+cryptography
+python-jose
