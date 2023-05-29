@@ -14,3 +14,6 @@ websockets
 # for auth
 cryptography
 python-jose
+
+# AWS
+boto3

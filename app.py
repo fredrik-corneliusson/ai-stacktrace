@@ -1,3 +1,4 @@
+import boto3
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -61,3 +62,19 @@ async def websocket_endpoint(websocket: WebSocket):
         async for message in analyze(data, 0.5, 2, 0.0):
             await websocket.send_json(message.dict())
         await websocket.send_json({'status': 'completed'})
+
+
+@app.get("/get_user_info/")
+async def get_user_info(access_token: str):
+    client = boto3.client('cognito-idp', region_name='eu-north-1')
+
+    try:
+        response = client.get_user(
+            AccessToken=access_token
+        )
+
+        return response['UserAttributes']
+    except client.exceptions.NotAuthorizedException:
+        return {"error": "NotAuthorizedException - Invalid Access Token"}
+    except Exception as e:
+        return {"error": str(e)}
