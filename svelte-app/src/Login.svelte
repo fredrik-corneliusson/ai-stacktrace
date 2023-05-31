@@ -10,6 +10,7 @@
         const responseType = 'token';
         const scope = 'aws.cognito.signin.user.admin+email+openid+phone+profile';
         const redirectUri = encodeURIComponent('http://localhost:8080/callback');
+        //const redirectUri = encodeURIComponent('https://stack.ai.bitflip.guru/callback');
 
         window.location.href = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=${responseType}&scope=${scope}&redirect_uri=${redirectUri}`;
     });
