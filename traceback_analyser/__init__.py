@@ -1,7 +1,8 @@
 import asyncio
 import logging
-from typing import AsyncGenerator
+from typing import AsyncGenerator, AsyncIterable
 
+from langchain.callbacks import AsyncIteratorCallbackHandler
 from pydantic import BaseModel
 
 from .process_tb import filter_traceback
@@ -27,12 +28,17 @@ class Message(BaseModel):
     message: str
 
 
-async def analyze(trace: str, threshold: float, max_similar_lines: int, temprature: float) -> AsyncGenerator[Message, None]:
+async def analyze(
+        trace: str,
+        threshold: float,
+        max_similar_lines: int,
+        temprature: float) -> AsyncGenerator[Message, None]:
     """
     Analyze a Java traceback
     Before being sent for analysis the traceback is filtered to remove unnecessary lines.
     This is to reduce the amount sent to for analysis.
     """
+    logger.debug("analyze...")
     status = "RUNNING"
     yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
     await asyncio.sleep(0)
@@ -41,10 +47,14 @@ async def analyze(trace: str, threshold: float, max_similar_lines: int, tempratu
     await asyncio.sleep(0)
     yield Message(status=status, stage="ANAYLSIS_RUNNING", message="Analyzing...")
     await asyncio.sleep(0)
-    result = send_to_openai_chat(processed_trace, temprature=temprature)
-    yield Message(status=status, stage="ANAYLSIS_DONE", message=result.content)
-    await asyncio.sleep(0)
+    logger.debug("Sending to chat...")
+    responses = []
+    async for response in send_to_openai_chat(processed_trace, temprature=temprature):
+        logger.info("got: response")
+        responses.append(response)
 
+    yield Message(status=status, stage="ANAYLSIS_DONE", message=''.join(responses))
+    await asyncio.sleep(0)
 
 
 instruction = """You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity. Please provide a helpful summarization in one paragraph and a solution. 
@@ -59,8 +69,10 @@ template = """This is the java traceback:
 
 model_name = "gpt-3.5-turbo"
 
+# async streaming inspiration from:
+# https://gist.github.com/ninely/88485b2e265d852d3feb8bd115065b1a
 
-def send_to_openai_chat(traceback: str, temprature=0.0):
+async def send_to_openai_chat(traceback: str, temprature=0.0) -> AsyncIterable[str]:
     prompt = PromptTemplate(
         input_variables=["traceback"],
         template=template,
@@ -75,10 +87,24 @@ def send_to_openai_chat(traceback: str, temprature=0.0):
     logger.debug(text)
     logger.debug("==============")
 
-    chat = ChatOpenAI(temperature=temprature, model_name=model_name)
+    callback = AsyncIteratorCallbackHandler()
+
+    chat = ChatOpenAI(
+        streaming=True,
+        verbose=True,
+        callbacks=[callback],
+        temperature=temprature,
+        model_name=model_name)
 
     messages = [
         SystemMessage(content=instruction),
         HumanMessage(content=text)
     ]
-    return chat(messages)
+    # Begin a task that runs in the background.
+    task = asyncio.create_task(chat.agenerate(messages=[messages]))
+
+    async for token in callback.aiter():
+        logger.info(f"data: {token}")
+        yield token
+
+    await task

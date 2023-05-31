@@ -1,3 +1,5 @@
+import logging
+
 import boto3
 from dotenv import load_dotenv
 
@@ -11,6 +13,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from auth import decode_token
 
 from traceback_analyser import analyze
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -28,10 +33,11 @@ app.add_middleware(
 def read_root():
     return {"Hello": "World"}
 
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    logger.info("Websocket accepted")
+
     # Receive the first message and extract the token
     data = await websocket.receive_text()
     message = json.loads(data)
@@ -59,6 +65,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
     while True:
         data = await websocket.receive_text()
+        logger.debug(f"Got data to analyse: {data}")
         async for message in analyze(data, 0.5, 2, 0.0):
             await websocket.send_json(message.dict())
         await websocket.send_json({'status': 'completed'})
