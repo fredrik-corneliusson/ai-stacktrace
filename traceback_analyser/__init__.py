@@ -10,6 +10,8 @@ from .process_tb import filter_traceback
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+VERBOSE_CHAT_LOGGING = False
+
 prompt = """
 You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. The solution should be presented in a to the point and compact as possible:
 """
@@ -47,13 +49,10 @@ async def analyze(
     await asyncio.sleep(0)
     yield Message(status=status, stage="ANAYLSIS_RUNNING", message="Analyzing...")
     await asyncio.sleep(0)
-    logger.debug("Sending to chat...")
-    responses = []
+    logger.debug("Sending chat prompt and streaming response...")
     async for response in send_to_openai_chat(processed_trace, temprature=temprature):
-        logger.info("got: response")
-        responses.append(response)
+        yield Message(status="STREAMING_RESPONSE", stage="ANAYLSIS_RUNNING", message=response)
 
-    yield Message(status=status, stage="ANAYLSIS_DONE", message=''.join(responses))
     await asyncio.sleep(0)
 
 
@@ -91,7 +90,7 @@ async def send_to_openai_chat(traceback: str, temprature=0.0) -> AsyncIterable[s
 
     chat = ChatOpenAI(
         streaming=True,
-        verbose=True,
+        verbose=VERBOSE_CHAT_LOGGING,
         callbacks=[callback],
         temperature=temprature,
         model_name=model_name)
@@ -104,7 +103,7 @@ async def send_to_openai_chat(traceback: str, temprature=0.0) -> AsyncIterable[s
     task = asyncio.create_task(chat.agenerate(messages=[messages]))
 
     async for token in callback.aiter():
-        logger.info(f"data: {token}")
+        logger.debug(f"data: {token}")
         yield token
 
     await task

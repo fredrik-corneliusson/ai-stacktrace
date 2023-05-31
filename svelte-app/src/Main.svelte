@@ -11,6 +11,7 @@
 
     let loading = false;
     let messages = [];
+    let messageGroups = [];
 
     function sendText() {
         loading = true;
@@ -37,28 +38,37 @@
         };
 
         ws.onmessage = function(event) {
-            let data = event.data;
+            let message = event.data;
             try {
-                data = JSON.parse(event.data);
-                if(data.status === 'completed') {
+                message = JSON.parse(event.data);
+                if(message.status === 'completed') {
                     loading = false;
 
-                } else if(data.status === 'error') {
+                } else if(message.status === 'error') {
                     loading = false
-                    console.log("Error: ${data.status_code} ${data.message}");
-                    if (data.status_code === 403) {
+                    console.log("Error: ${message.status_code} ${message.message}");
+                    if (message.status_code === 403) {
                         console.log("Invalid token, redirecting to login");
                         localStorage.removeItem('token');
                         navigate('/login');
 
                     }
-                }
-                else {
-                    messages = [...messages, data];
+                } else {
+                    messages = [...messages, message];
+                    // Group messages
+                    if (messageGroups.length === 0 ||
+                        messageGroups[messageGroups.length - 1].status !== message.status ||
+                        message.status !== 'STREAMING_RESPONSE') {
+                        messageGroups = [...messageGroups, { status: message.status, messages: [message] }];
+                    } else {
+                        const lastGroup = messageGroups[messageGroups.length - 1];
+                        lastGroup.messages.push(message);
+                        messageGroups = [...messageGroups];
+                    }
                 }
             } catch(error) {
                 // Not a JSON message, treat it as a regular text message
-                // messages = [...messages, data];
+                // messages = [...messages, message];
                 loading = false;
 
             }
@@ -82,6 +92,12 @@
 {#if loading}
     <Spinner></Spinner>
 {/if}
-{#each messages as message, i (i)}
-    <p>{message.stage} - {message.message}</p>
+
+{#each messageGroups as group, i (i)}
+    <p>
+        <!--{group.status}-->
+        {#each group.messages as message}
+            {message.message}
+        {/each}
+    </p>
 {/each}
