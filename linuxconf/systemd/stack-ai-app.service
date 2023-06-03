@@ -4,7 +4,7 @@ After=network.target
 [Service]
 User=ec2-user
 Group=ec2-user
-WorkingDirectory=/home/ec2-user/projects/ai-stacktrace/fastapi_app
-ExecStart=/home/ec2-user/projects/ai-stacktrace/fastapi_app/venv/bin/uvicorn app:app --port 9000
+WorkingDirectory=/home/ec2-user/projects/ai-stacktrace/fastapi-app/
+ExecStart=/home/ec2-user/projects/ai-stacktrace/fastapi-app/venv/bin/uvicorn app:app --port 9000
 [Install]
 WantedBy=multi-user.target

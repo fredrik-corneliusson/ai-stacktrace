@@ -52,3 +52,11 @@ See the files in linuxconf/nginx
 See the files in linuxconf/systemd
 `/etc/systemd/system/stack-ai-app.service`
 `/etc/systemd/system/stack-ai-app-web.service`
+
+## Install systemd service files and start webserver daemons
+```
+sudo ln -s  $(readlink -f ./linuxconf/systemd/stack-ai-app.service) /etc/systemd/system/stack-ai-app.service
+sudo ln -s  $(readlink -f ./linuxconf/systemd/stack-ai-app-web.service) /etc/systemd/system/stack-ai-app-web.service
+sudo systemctl daemon-reload
+sudo systemctl restart stack-ai-app.service stack-ai-app-web.service
+```
