@@ -1,0 +1,10 @@
+[Unit]
+Description=Svelte web server for stack-ai analysis
+After=network.target
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/projects/ai-stacktrace/sveltekit-app
+ExecStart=/home/ec2-user/projects/ai-stacktrace/sveltekit-app/start.sh
+[Install]
+WantedBy=multi-user.target

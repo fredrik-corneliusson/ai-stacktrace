@@ -1,0 +1,10 @@
+[Unit]
+Description=Uvicorn daemon to serve stack-ai analysis fastapi app
+After=network.target
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/home/ec2-user/projects/ai-stacktrace
+ExecStart=/home/ec2-user/projects/ai-stacktrace/venv/bin/uvicorn app:app --host 0.0.0.0 --port 9000
+[Install]
+WantedBy=multi-user.target
