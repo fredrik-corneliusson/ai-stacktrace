@@ -6,10 +6,13 @@ Check out this library instead for the server app:
 https://github.com/ajndkr/lanarky
 
 ## Fastapi-app
-`cd fastapi-app`
-
-### create venv
-`python3 -m venv venv`
+```
+cd fastapi-app
+# create venv
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requierments.txt
+```
 
 ### Add .env
 Setup .env file:
@@ -26,7 +29,10 @@ uvicorn app:app --reload --log-level debug --port 9000
 ```
 
 ## Sveltekit
-`cd svelte-app`
+```
+cd svelte-app
+npm install
+```
 
 ### Add .env
 Setup .env file:
@@ -34,7 +40,6 @@ copy either `env.localhost` or `env.server` to `.env` depending env it runs on.
 
 ### Start
 ```
-cd svelte-app
 npm run dev -- --open
 ```
 
