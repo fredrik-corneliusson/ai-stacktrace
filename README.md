@@ -11,7 +11,7 @@ cd fastapi-app
 # create venv
 python3 -m venv venv
 . venv/bin/activate
-pip install -r requierments.txt
+pip install -r requirements.txt
 ```
 
 ### Add .env
