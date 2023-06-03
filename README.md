@@ -5,7 +5,12 @@ Analyze stack trace app
 Check out this library instead for the server app:
 https://github.com/ajndkr/lanarky
 
-## fastapi
+## Fastapi-app
+`cd fastapi-app`
+
+### create venv
+`python3 -m venv venv`
+
 ### Add .env
 Setup .env file:
 ```
@@ -13,7 +18,7 @@ OPENAI_API_KEY=...
 ```
 ### Start
 ```
-uvicorn app:app --reload
+uvicorn app:app --reload --port 9000
 
 Debug mode:
 uvicorn app:app --reload --log-level debug --port 9000
