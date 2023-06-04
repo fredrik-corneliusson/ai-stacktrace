@@ -44,6 +44,7 @@ async def websocket_endpoint(websocket: WebSocket):
     token = message.get('token')
 
     if not token:
+        await websocket.send_json({'status': 'error', "status_code": 403, "message": "No token"})
         await websocket.close(code=1008)
         raise HTTPException(status_code=403, detail="Invalid request")
 

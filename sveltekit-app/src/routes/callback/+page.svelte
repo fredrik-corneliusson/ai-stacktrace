@@ -1,6 +1,5 @@
 <script>
 	import { onMount } from "svelte";
-    import { redirect } from '@sveltejs/kit';
 
 	onMount(() => {
 		const hashParams = window.location.hash
@@ -20,7 +19,7 @@
 		if (token) {
 			localStorage.setItem('token', token);
 		}
-        throw redirect(307, '/app');
+        window.location.href = '/app';
 
 	});
 </script>

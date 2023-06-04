@@ -78,6 +78,15 @@ pre {
 	margin: 0 auto;
 }
 
+.stacktrace-main-column {
+	display: flex;
+	/*max-width: 48rem;*/
+	flex: 0;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0 auto;
+}
+
 input,
 button {
 	font-size: inherit;

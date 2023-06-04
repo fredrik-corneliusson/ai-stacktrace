@@ -1,6 +1,5 @@
 <script>
     import {onMount} from "svelte";
-    import { PUBLIC_BASE_URL  } from '$env/static/public';
 
     onMount(() => {
 
@@ -8,7 +7,8 @@
         const clientId = '5o63babfvtvtr1b3k51db2929r';
         const responseType = 'token';
         const scope = 'aws.cognito.signin.user.admin+email+openid+phone+profile';
-        const redirectUri = encodeURIComponent(`${PUBLIC_BASE_URL}/callback`);
+        const base_url = `${window.location.protocol}//${window.location.host}`;
+        const redirectUri = encodeURIComponent(`${base_url}/callback`);
         console.log(redirectUri)
 
         window.location.href = `https://${domain}/oauth2/authorize?client_id=${clientId}&response_type=${responseType}&scope=${scope}&redirect_uri=${redirectUri}`;
