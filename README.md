@@ -48,6 +48,11 @@ npm run dev -- --open
 `/etc/nginx/conf.d/stack.ai.conf`
 See the files in linuxconf/nginx
 
+```
+sudo ln -s  $(readlink -f ./linuxconf/nginx/stack.ai.conf) /etc/nginx/conf.d/stack.ai.conf
+sudo systemctl restart nginx.service
+```
+
 ### Start web services fastaip and sveltekit
 See the files in linuxconf/systemd
 `/etc/systemd/system/stack-ai-app.service`
