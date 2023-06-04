@@ -89,7 +89,7 @@
     <h1>Analyse Java stack-trace errors</h1>
 
     <p>
-        Paste a java stack-trace and click Run analysis to provide a short summary of the error and possible solution.
+        Paste a java stack-trace and click <strong>Run analysis</strong> to provide a short summary of the error and possible solution.
     </p>
 <!--    <label for="stacktrace-area">Stacktrace</label>-->
     <textarea disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
@@ -109,3 +109,15 @@
     {/each}
 
 </div>
+
+<style>
+    .stacktrace-main-column {
+        display: flex;
+        /*max-width: 48rem;*/
+        flex: 0;
+        flex-direction: column;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+</style>

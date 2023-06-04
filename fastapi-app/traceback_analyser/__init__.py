@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 VERBOSE_CHAT_LOGGING = False
+DETAILED_RESPONSES = False
 
 prompt = """
 You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. The solution should be presented in a to the point and compact as possible:
@@ -42,13 +43,15 @@ async def analyze(
     """
     logger.debug("analyze...")
     status = "RUNNING"
-    yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
-    await asyncio.sleep(0)
+    if DETAILED_RESPONSES:
+        yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
+        await asyncio.sleep(0)
     processed_trace = filter_traceback(trace, similarity_threshold=threshold, max_similar_lines=max_similar_lines)
-    yield Message(status=status, stage="STACKTRACE_FILTRED", message=processed_trace)
-    await asyncio.sleep(0)
-    yield Message(status=status, stage="ANAYLSIS_RUNNING", message="Analyzing...")
-    await asyncio.sleep(0)
+    if DETAILED_RESPONSES:
+        yield Message(status=status, stage="STACKTRACE_FILTRED", message=processed_trace)
+        await asyncio.sleep(0)
+        yield Message(status=status, stage="ANAYLSIS_RUNNING", message="Analyzing...")
+        await asyncio.sleep(0)
     logger.debug("Sending chat prompt and streaming response...")
     async for response in send_to_openai_chat(processed_trace, temprature=temprature):
         yield Message(status="STREAMING_RESPONSE", stage="ANAYLSIS_RUNNING", message=response)

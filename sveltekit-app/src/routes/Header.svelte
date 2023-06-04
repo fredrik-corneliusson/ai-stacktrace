@@ -1,14 +1,12 @@
 <script>
 	import { page } from '$app/stores';
-	import logo from '$lib/images/svelte-logo.svg';
-	import github from '$lib/images/github.svg';
+	import { loginStatus } from './userStore';
+
+
 </script>
 
 <header>
 	<div class="corner">
-		<a href="https://kit.svelte.dev">
-			<img src={logo} alt="SvelteKit" />
-		</a>
 	</div>
 
 	<nav>
@@ -19,11 +17,8 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname === '/about' ? 'page' : undefined}>
-				<a href="/about">About</a>
-			</li>
 			<li aria-current={$page.url.pathname.startsWith('/app') ? 'page' : undefined}>
-				<a href="/app">App</a>
+				<a href="/app">Java</a>
 			</li>
 			<li aria-current={$page.url.pathname.startsWith('/login') ? 'page' : undefined}>
 				<a href="/login">Login</a>
@@ -35,9 +30,16 @@
 	</nav>
 
 	<div class="corner">
-		<a href="https://github.com/sveltejs/kit">
-			<img src={github} alt="GitHub" />
-		</a>
+		<!--		<a href="https://github.com/sveltejs/kit">-->
+		<!--			<img src={github} alt="GitHub" />-->
+		<!--		</a>-->
+	</div>
+
+	<div class="status-info">
+		{$loginStatus}
+<!--		<a href="https://github.com/sveltejs/kit">-->
+<!--			<img src={github} alt="GitHub" />-->
+<!--		</a>-->
 	</div>
 </header>
 
@@ -47,9 +49,20 @@
 		justify-content: space-between;
 	}
 
+	.status-info {
+		position: fixed;
+		top: 5px;
+		right: 5px;
+		background-color: white;
+		padding: 10px;
+		border: 1px solid #ccc;
+		border-radius: 5px;
+		z-index: 100;
+	}
+
 	.corner {
-		width: 3em;
-		height: 3em;
+		width: 5em;
+		height: 5em;
 	}
 
 	.corner a {

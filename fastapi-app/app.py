@@ -7,7 +7,7 @@ load_dotenv()
 
 import json
 
-from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from auth import decode_token
@@ -72,17 +72,22 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.send_json({'status': 'completed'})
 
 
+cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
+
 @app.get("/get_user_info/")
-async def get_user_info(access_token: str):
-    client = boto3.client('cognito-idp', region_name='eu-north-1')
+async def get_user_info(request: Request):
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        access_token = auth_header.split(" ")[1]
+    else:
+        raise HTTPException(status_code=401, detail="No Authorization token provided")
 
     try:
-        response = client.get_user(
+        response = cognito_client.get_user(
             AccessToken=access_token
         )
-
-        return response['UserAttributes']
-    except client.exceptions.NotAuthorizedException:
+        logger.info(response['UserAttributes'])
+        # covert list of Name:Value objects to dict
+        return {item['Name']: item['Value'] for item in response['UserAttributes']}
+    except cognito_client.exceptions.NotAuthorizedException:
         return {"error": "NotAuthorizedException - Invalid Access Token"}
-    except Exception as e:
-        return {"error": str(e)}

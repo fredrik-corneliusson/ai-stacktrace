@@ -1,34 +1,32 @@
 <script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
 </script>
 
 <svelte:head>
 	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+	<meta name="description"
+		  content="Analyze stacktrace and provide a short summary of the error and possible solutions." />
 </svelte:head>
 
-<section>
+<div class="welcome-main-column">
 	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
+			AI Stacktrace analyzer
 	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
+	<div>
+		Analyze java stacktrace and provide a short summary of the error and possible solutions.
+	</div>
+</div>
 
 <style>
+
+	.welcome-main-column {
+		display: flex;
+		/*max-width: 48rem;*/
+		flex: 0.1;
+		flex-direction: column;
+		justify-content: center;
+		margin: 0 auto;
+	}
+
 	section {
 		display: flex;
 		flex-direction: column;
@@ -41,19 +39,4 @@
 		width: 100%;
 	}
 
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
 </style>
