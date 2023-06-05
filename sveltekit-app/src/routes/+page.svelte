@@ -12,7 +12,7 @@
 			AI Stacktrace analyzer
 	</h1>
 	<div>
-		Analyze java stacktrace and provide a short summary of the error and possible solutions.
+		Analyze stacktrace and provide a short summary of the error and possible solutions.
 	</div>
 </div>
 

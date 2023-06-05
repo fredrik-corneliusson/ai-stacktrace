@@ -74,7 +74,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
 
-@app.get("/get_user_info/")
+@app.get("/get_user_info")
 async def get_user_info(request: Request):
     auth_header = request.headers.get('Authorization')
     if auth_header:

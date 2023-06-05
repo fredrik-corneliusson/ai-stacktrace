@@ -3,7 +3,8 @@
 
     onMount(() => {
 
-        const domain = 'service-user-pool-domain-dev-snoddas.auth.eu-north-1.amazoncognito.com';
+        // const domain = 'service-user-pool-domain-dev-snoddas.auth.eu-north-1.amazoncognito.com';
+        const domain = 'auth.ai.bitflip.guru';
         const clientId = '5o63babfvtvtr1b3k51db2929r';
         const responseType = 'token';
         const scope = 'aws.cognito.signin.user.admin+email+openid+phone+profile';
