@@ -15,6 +15,7 @@
     function sendText() {
         loading = true;
         messages = [];
+        messageGroups = [];
         const token = localStorage.getItem('token');
         let ws = new WebSocket(PUBLIC_WEBSOCKET);
 
@@ -40,7 +41,7 @@
             try {
                 message = JSON.parse(event.data);
             } catch (e) {
-				console.log('Error parsing websocket message to json: ', e);
+                console.log('Error parsing websocket message to json: ', e);
                 loading = false;
                 return;
 
@@ -63,7 +64,8 @@
                 // Group messages
                 if (messageGroups.length === 0 ||
                     messageGroups[messageGroups.length - 1].status !== message.status ||
-                    message.status !== 'STREAMING_RESPONSE') {
+                    message.status !== 'STREAMING_RESPONSE'
+                ) {
                     messageGroups = [...messageGroups, {status: message.status, messages: [message]}];
                 } else {
                     const lastGroup = messageGroups[messageGroups.length - 1];
@@ -89,25 +91,26 @@
     <h1>Analyse Java stack-trace errors</h1>
 
     <p>
-        Paste a java stack-trace and click <strong>Run analysis</strong> to provide a short summary of the error and possible solution.
+        Paste a java stack-trace and click <strong>Run analysis</strong> to provide a short summary of the error and
+        possible solution.
     </p>
-<!--    <label for="stacktrace-area">Stacktrace</label>-->
+    <!--    <label for="stacktrace-area">Stacktrace</label>-->
     <textarea disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
     <p></p>
     <div>
         <button disabled='{loading}' on:click|preventDefault={sendText}>Run analysis</button>
         <button disabled='{loading}' on:click|preventDefault={loadExampleText}>Load example</button>
     </div>
-
-    {#each messageGroups as group, i (i)}
-        <p>
-            <!--{group.status}-->
-            {#each group.messages as message}
-                {message.message}
-            {/each}
-        </p>
-    {/each}
-
+    <div class="analysis-result">
+        {#each messageGroups as group, i (i)}
+            <p>
+                <!--{group.status}-->
+                {#each group.messages as message}
+                    {message.message}
+                {/each}
+            </p>
+        {/each}
+    </div>
 </div>
 
 <style>
@@ -118,6 +121,9 @@
         flex-direction: column;
         justify-content: center;
         margin: 0 auto;
+    }
+
+    .analysis-result {
     }
 
 </style>
