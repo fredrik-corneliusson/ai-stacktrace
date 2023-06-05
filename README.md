@@ -65,3 +65,18 @@ sudo ln -s  $(readlink -f ./linuxconf/systemd/stack-ai-app-web.service) /etc/sys
 sudo systemctl daemon-reload
 sudo systemctl restart stack-ai-app.service stack-ai-app-web.service
 ```
+
+# Follow logs
+
+## FastApi app
+```
+sudo journalctl -u stack-ai-app.service -f
+```
+
+## Nginx
+```
+sudo tail -f /var/log/nginx/error.log /var/log/nginx/access.log
+```
+
+
+
