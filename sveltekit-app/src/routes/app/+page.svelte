@@ -4,7 +4,7 @@
     let textAreaValue = '';
 
     async function loadExampleText() {
-        const response = await fetch('/example.txt');
+        const response = await fetch('/example-tb-java.txt');
         textAreaValue = await response.text();
     }
 

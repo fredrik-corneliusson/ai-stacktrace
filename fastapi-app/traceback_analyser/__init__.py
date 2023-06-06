@@ -5,17 +5,13 @@ from typing import AsyncGenerator, AsyncIterable
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from pydantic import BaseModel
 
-from .process_tb import filter_traceback
+from .process_tb import FilterTracebackJava
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 VERBOSE_CHAT_LOGGING = False
 DETAILED_RESPONSES = False
-
-prompt = """
-You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. The solution should be presented in a to the point and compact as possible:
-"""
 
 from langchain import PromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -46,7 +42,7 @@ async def analyze(
     if DETAILED_RESPONSES:
         yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
         await asyncio.sleep(0)
-    processed_trace = filter_traceback(trace, similarity_threshold=threshold, max_similar_lines=max_similar_lines)
+    processed_trace = FilterTracebackJava().filter(trace, similarity_threshold=threshold, max_similar_lines=max_similar_lines)
     if DETAILED_RESPONSES:
         yield Message(status=status, stage="STACKTRACE_FILTRED", message=processed_trace)
         await asyncio.sleep(0)

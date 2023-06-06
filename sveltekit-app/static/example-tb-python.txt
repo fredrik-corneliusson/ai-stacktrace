@@ -1,0 +1,39 @@
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/user/myproj/venv/lib/site-packages/uvicorn/protocols/websockets/websockets_impl.py", line 254, in run_asgi
+    result = await self.app(self.scope, self.asgi_receive, self.asgi_send)
+  File "/home/user/myproj/venv/lib/site-packages/uvicorn/middleware/proxy_headers.py", line 78, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/fastapi/applications.py", line 276, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/applications.py", line 122, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/middleware/errors.py", line 149, in __call__
+    await self.app(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/middleware/cors.py", line 75, in __call__
+    await self.app(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/middleware/exceptions.py", line 79, in __call__
+    raise exc
+  File "/home/user/myproj/venv/lib/site-packages/starlette/middleware/exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "/home/user/myproj/venv/lib/site-packages/fastapi/middleware/asyncexitstack.py", line 21, in __call__
+    raise e
+  File "/home/user/myproj/venv/lib/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/routing.py", line 341, in handle
+    await self.app(scope, receive, send)
+  File "/home/user/myproj/venv/lib/site-packages/starlette/routing.py", line 82, in app
+    await func(session)
+  File "/home/user/myproj/venv/lib/site-packages/fastapi/routing.py", line 289, in app
+    await dependant.call(**values)
+  File "/home/user/myproj/fastapi-app/app.py", line 70, in websocket_endpoint
+    async for message in analyze(data, 0.5, 2, 0.0):
+  File "/home/user/myproj/fastapi-app/traceback_analyser/__init__.py", line 49, in analyze
+    processed_trace = filter_traceback(trace, similarity_threshold=threshold, max_similar_lines=max_similar_lines)
+  File "/home/user/myproj/fastapi-app/traceback_analyser/process_tb.py", line 29, in filter_traceback
+    traceback = _filter_traceback(traceback, similarity_threshold=similarity_threshold,
+  File "/home/user/myproj/fastapi-app/traceback_analyser/process_tb.py", line 62, in _filter_traceback
+    filtred_traceback = '/n'.join(out_line)
+NameError: name 'out_line' is not defined

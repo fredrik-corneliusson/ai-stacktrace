@@ -32,10 +32,6 @@
             console.log(user_details);
             // Navigate to the new page
             goto('/app');
-            // Wait a short time before redirecting
-            // setTimeout(() => {
-            //     window.location.href = '/app';
-            // }, 100); // 100ms delay
         }
 
 
