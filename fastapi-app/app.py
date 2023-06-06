@@ -65,9 +65,11 @@ async def websocket_endpoint(websocket: WebSocket):
         raise
 
     while True:
+        language = await websocket.receive_text()
         data = await websocket.receive_text()
-        logger.debug(f"Got data to analyse: {data}")
-        async for message in analyze(data, 0.5, 2, 0.0):
+        logger.info(f"Got {language} stacktrace to analyse: {data}")
+        logger.debug(f"Stacktrace data: {data}")
+        async for message in analyze(language, data, 0.5, 2, 0.0):
             await websocket.send_json(message.dict())
         await websocket.send_json({'status': 'completed'})
 

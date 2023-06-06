@@ -26,8 +26,8 @@ class Message(BaseModel):
     stage: str
     message: str
 
-
 async def analyze(
+        language: str,
         trace: str,
         threshold: float,
         max_similar_lines: int,
@@ -48,61 +48,95 @@ async def analyze(
         await asyncio.sleep(0)
         yield Message(status=status, stage="ANAYLSIS_RUNNING", message="Analyzing...")
         await asyncio.sleep(0)
+
     logger.debug("Sending chat prompt and streaming response...")
-    async for response in send_to_openai_chat(processed_trace, temprature=temprature):
+    if language.lower() is "java":
+        analyser = AnalyserJava()
+    elif language.lower() is "python":
+        analyser = AnalyserPython()
+    else:
+        # Generic
+        analyser = Analyser()
+
+    async for response in analyser.send_to_openai_chat(processed_trace, temprature=temprature):
         yield Message(status="STREAMING_RESPONSE", stage="ANAYLSIS_RUNNING", message=response)
 
     await asyncio.sleep(0)
 
 
-instruction = """You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity. Please provide a helpful summarization in one paragraph and a solution. 
-The solution should be presented in a to the point and compact as possible:
-"""
-
-template = """This is the java traceback:
-    >>>
-    {traceback}
-    >>>
-    """
-
 model_name = "gpt-3.5-turbo"
 
-# async streaming inspiration from:
-# https://gist.github.com/ninely/88485b2e265d852d3feb8bd115065b1a
 
-async def send_to_openai_chat(traceback: str, temprature=0.0) -> AsyncIterable[str]:
-    prompt = PromptTemplate(
-        input_variables=["traceback"],
-        template=template,
-    )
 
-    input = {
-        "traceback": traceback
-    }
-    text = prompt.format(**input)
+class Analyser:
+    instruction = """You are a helpful programming java expert. Here follows a error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. 
+        The solution should be presented in a to the point and compact as possible:
+        """
 
-    logger.debug("=== Prompt ===")
-    logger.debug(text)
-    logger.debug("==============")
+    template = """This is the java traceback:
+            >>>
+            {traceback}
+            >>>
+            """
 
-    callback = AsyncIteratorCallbackHandler()
+    async def send_to_openai_chat(self, traceback: str, temprature=0.0) -> AsyncIterable[str]:
+        # async streaming inspiration from:
+        # https://gist.github.com/ninely/88485b2e265d852d3feb8bd115065b1a
+        prompt = PromptTemplate(
+            input_variables=["traceback"],
+            template=self.template,
+        )
 
-    chat = ChatOpenAI(
-        streaming=True,
-        verbose=VERBOSE_CHAT_LOGGING,
-        callbacks=[callback],
-        temperature=temprature,
-        model_name=model_name)
+        input = {
+            "traceback": traceback
+        }
+        text = prompt.format(**input)
 
-    messages = [
-        SystemMessage(content=instruction),
-        HumanMessage(content=text)
-    ]
-    # Begin a task that runs in the background.
-    task = asyncio.create_task(chat.agenerate(messages=[messages]))
+        logger.debug("=== Prompt ===")
+        logger.debug(text)
+        logger.debug("==============")
 
-    async for token in callback.aiter():
-        logger.debug(f"data: {token}")
-        yield token
+        callback = AsyncIteratorCallbackHandler()
 
-    await task
+        chat = ChatOpenAI(
+            streaming=True,
+            verbose=VERBOSE_CHAT_LOGGING,
+            callbacks=[callback],
+            temperature=temprature,
+            model_name=model_name)
+
+        messages = [
+            SystemMessage(content=self.instruction),
+            HumanMessage(content=text)
+        ]
+        # Begin a task that runs in the background.
+        task = asyncio.create_task(chat.agenerate(messages=[messages]))
+
+        async for token in callback.aiter():
+            logger.debug(f"data: {token}")
+            yield token
+
+        await task
+
+class AnalyserJava(Analyser):
+    instruction = """You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity. 
+    Please provide a helpful summarization in one paragraph and a solution. The solution should be presented in a to the point and compact as possible:"""
+
+    template = """This is the java traceback:
+            >>>
+            {traceback}
+            >>>
+            """
+
+
+class AnalyserPython(Analyser):
+    instruction = """You are a helpful python expert. Here follows a python error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. 
+        The solution should be presented in a to the point and compact as possible:
+        """
+
+    template = """This is the python traceback:
+            >>>
+            {traceback}
+            >>>
+            """
+

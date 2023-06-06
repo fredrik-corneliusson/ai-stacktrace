@@ -22,6 +22,7 @@
         ws.onopen = function () {
             console.log('WebSocket is open now.');
             ws.send(JSON.stringify({token}));
+            ws.send("java");
             ws.send(textAreaValue);
 
             // Set up timeout
