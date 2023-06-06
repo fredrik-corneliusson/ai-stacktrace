@@ -76,6 +76,7 @@ class FilterTracebackJava:
 
 
 class FilterTracebackPython:
+    # TODO: remove/simplifiy paths in tracebacks.
     _re_remove_line_nr = re.compile(r', line \d+, ')
 
     def filter(self, traceback: str, similarity_threshold=0.6, max_similar_lines=3, runs=2) -> str:
@@ -107,8 +108,8 @@ class FilterTracebackPython:
 
     def _filter_traceback(self, traceback: str, similarity_threshold, max_similar_lines) -> str:
         def _similarity(a, b):
-            a = self._re_remove_line_nr.sub(")", a)
-            b = self._re_remove_line_nr.sub(")", b)
+            a = self._re_remove_line_nr.sub("", a)
+            b = self._re_remove_line_nr.sub("", b)
             sim = ratio(a, b)
             logger.debug("--")
             logger.debug(a)

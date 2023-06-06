@@ -17,8 +17,11 @@
 			<li aria-current={$page.url.pathname === '/' ? 'page' : undefined}>
 				<a href="/">Home</a>
 			</li>
-			<li aria-current={$page.url.pathname.startsWith('/app') ? 'page' : undefined}>
-				<a href="/app">Java</a>
+			<li aria-current={$page.url.pathname.startsWith('/java') ? 'page' : undefined}>
+				<a href="/java">Java</a>
+			</li>
+			<li aria-current={$page.url.pathname.startsWith('/python') ? 'page' : undefined}>
+				<a href="/python">Python</a>
 			</li>
 			<li aria-current={$page.url.pathname.startsWith('/login') ? 'page' : undefined}>
 				<a href="/login">Login</a>

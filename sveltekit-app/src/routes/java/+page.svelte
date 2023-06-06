@@ -11,6 +11,7 @@
     let loading = false;
     let messages = [];
     let messageGroups = [];
+    const language = "java";
 
     function sendText() {
         loading = true;
@@ -22,7 +23,7 @@
         ws.onopen = function () {
             console.log('WebSocket is open now.');
             ws.send(JSON.stringify({token}));
-            ws.send("java");
+            ws.send(language);
             ws.send(textAreaValue);
 
             // Set up timeout

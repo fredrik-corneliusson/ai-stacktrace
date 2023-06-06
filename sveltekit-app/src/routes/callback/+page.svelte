@@ -31,7 +31,7 @@
             updateUserStore(); // Update the store when localStorage changes
             console.log(user_details);
             // Navigate to the new page
-            goto('/app');
+            goto('/');
         }
 
 
