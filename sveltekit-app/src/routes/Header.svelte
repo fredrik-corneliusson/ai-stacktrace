@@ -59,8 +59,19 @@
 		background-color: white;
 		padding: 10px;
 		border: 1px solid #ccc;
-		border-radius: 5px;
-		z-index: 100;
+		border-radius: 20px;
+	}
+
+	@media screen and (max-width: 800px) {
+		.status-info {
+			/*position: static;*/
+			font-size: 0.8rem; /* reduce the font size */
+			padding: 5px; /* reduce the padding */
+			z-index: -1;
+		}
+		.corner {
+			display: none;
+		}
 	}
 
 	.corner {

@@ -2,6 +2,7 @@ import logging
 
 import boto3
 from dotenv import load_dotenv
+from starlette.websockets import WebSocketDisconnect
 
 load_dotenv()
 
@@ -64,7 +65,7 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.close()
         raise
 
-    while True:
+    try:
         language = await websocket.receive_text()
         data = await websocket.receive_text()
         logger.info(f"Got {language} stacktrace to analyse: {data}")
@@ -72,7 +73,10 @@ async def websocket_endpoint(websocket: WebSocket):
         async for message in analyze(language, data, 0.5, 2, 0.0):
             await websocket.send_json(message.dict())
         await websocket.send_json({'status': 'completed'})
-
+        await websocket.close()
+    except WebSocketDisconnect as e:
+        logger.info(f"Socket disconnected, info: {e}")
+        await websocket.close()
 
 cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
 
