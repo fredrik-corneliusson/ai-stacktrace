@@ -1,7 +1,21 @@
 <script>
 	import { page } from '$app/stores';
-	import { loginStatus } from './userStore';
+	import {loginStatus, updateUserStore} from './userStore';
+	import {onMount} from "svelte";
+	import {goto} from "$app/navigation";
 
+	onMount(() => {
+		updateUserStore();
+	});
+	// Navigate to login
+	function navigateToLogin() {
+		goto('/login');
+	}
+	function navigateToLogout() {
+		if (confirm("Are you sure you want to log out?")) {
+			goto('/logout');
+		}
+	}
 
 </script>
 
@@ -23,9 +37,6 @@
 			<li aria-current={$page.url.pathname.startsWith('/python') ? 'page' : undefined}>
 				<a href="/python">Python</a>
 			</li>
-			<li aria-current={$page.url.pathname.startsWith('/login') ? 'page' : undefined}>
-				<a href="/login">Login</a>
-			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
 			<path d="M0,0 L0,3 C0.5,3 0.5,3 1,2 L2,0 Z" />
@@ -39,14 +50,47 @@
 	</div>
 
 	<div class="status-info">
-		{$loginStatus}
-<!--		<a href="https://github.com/sveltejs/kit">-->
-<!--			<img src={github} alt="GitHub" />-->
-<!--		</a>-->
+		{#if $loginStatus === 'Not logged in'}
+			<button on:click={navigateToLogin}>Login</button>
+		{:else}
+			<button on:click={navigateToLogout}>{$loginStatus}</button>
+		{/if}
+
 	</div>
+	{#if $loginStatus === 'Not logged in'}
+		<div class="overlay">
+			<button on:click={navigateToLogin}>Login</button>
+		</div>
+	{/if}
 </header>
 
 <style>
+
+	.overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.3);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1000;
+	}
+	.overlay button {
+		/*font-size: x-large;*/
+		border-radius: 20px;
+		background: none;
+		border: none;
+		padding: 20px; /* Increase padding */
+		color: white;
+		text-decoration: underline;
+		cursor: pointer;
+		font-size: 2em; /* Increase font size */
+	}
+
+
 	header {
 		display: flex;
 		justify-content: space-between;
@@ -61,7 +105,13 @@
 		border: 1px solid #ccc;
 		border-radius: 20px;
 	}
-
+	.status-info button {
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+		font-size: inherit;
+	}
 	@media screen and (max-width: 800px) {
 		.status-info {
 			/*position: static;*/
