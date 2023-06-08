@@ -5,6 +5,11 @@ Analyze stack trace app
 Check out this library instead for the server app:
 https://github.com/ajndkr/lanarky
 
+## Setup AWS credentials
+We need aws credentials setup in order for boto3 to handel logout.
+...
+
+
 ## Fastapi-app
 ```
 cd fastapi-app
@@ -27,6 +32,12 @@ Debug mode:
 uvicorn app:app --reload --log-level debug --port 9000
 
 ```
+
+## kill hanged exit on windows
+Find process:
+`netstat -ano | findstr :9000`
+kill process in DOS:
+`taskkill /PID 17788 /F`
 
 ## Sveltekit
 ```

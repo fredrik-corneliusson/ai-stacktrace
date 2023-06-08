@@ -82,11 +82,9 @@ cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
 
 @app.get("/get_user_info")
 async def get_user_info(request: Request):
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        access_token = auth_header.split(" ")[1]
-    else:
-        raise HTTPException(status_code=401, detail="No Authorization token provided")
+    logger.info("Getting user info")
+    access_token = await _get_auth_token(request)
+
 
     try:
         response = cognito_client.get_user(
@@ -100,18 +98,25 @@ async def get_user_info(request: Request):
 
 @app.get("/logout")
 async def logout(request: Request):
-    auth_header = request.headers.get('Authorization')
-    if auth_header:
-        access_token = auth_header.split(" ")[1]
-    else:
-        raise HTTPException(status_code=401, detail="No Authorization token provided")
+    logger.info(f"logging out..")
+    access_token = await _get_auth_token(request)
+    logger.info(f"logging out {access_token}")
 
     try:
         response = cognito_client.global_sign_out(
             AccessToken=access_token
         )
-        logger.info(response)
+        logger.info(f"AWS logout response: {response}")
         # covert list of Name:Value objects to dict
         return {"message": "logged out OK"}
     except cognito_client.exceptions.NotAuthorizedException:
         return {"error": "NotAuthorizedException - Invalid Access Token"}
+
+
+async def _get_auth_token(request):
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        access_token = auth_header.split(" ")[1]
+    else:
+        raise HTTPException(status_code=401, detail="No Authorization token provided")
+    return access_token
