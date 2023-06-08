@@ -50,9 +50,9 @@ async def analyze(
         await asyncio.sleep(0)
 
     logger.debug("Sending chat prompt and streaming response...")
-    if language.lower() is "java":
+    if language.lower() == "java":
         analyser = AnalyserJava()
-    elif language.lower() is "python":
+    elif language.lower() == "python":
         analyser = AnalyserPython()
     else:
         # Generic

@@ -97,3 +97,21 @@ async def get_user_info(request: Request):
         return {item['Name']: item['Value'] for item in response['UserAttributes']}
     except cognito_client.exceptions.NotAuthorizedException:
         return {"error": "NotAuthorizedException - Invalid Access Token"}
+
+@app.get("/logout")
+async def logout(request: Request):
+    auth_header = request.headers.get('Authorization')
+    if auth_header:
+        access_token = auth_header.split(" ")[1]
+    else:
+        raise HTTPException(status_code=401, detail="No Authorization token provided")
+
+    try:
+        response = cognito_client.global_sign_out(
+            AccessToken=access_token
+        )
+        logger.info(response)
+        # covert list of Name:Value objects to dict
+        return {"message": "logged out OK"}
+    except cognito_client.exceptions.NotAuthorizedException:
+        return {"error": "NotAuthorizedException - Invalid Access Token"}
