@@ -70,7 +70,7 @@ model_name = "gpt-3.5-turbo"
 
 class Analyser:
     instruction = """You are a helpful programming java expert. Here follows a error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. 
-        The solution should be presented in a to the point and compact as possible:
+        The solution should be presented to the point and as compact as possible:
         """
 
     template = """This is the java traceback:
@@ -119,8 +119,8 @@ class Analyser:
         await task
 
 class AnalyserJava(Analyser):
-    instruction = """You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity. 
-    Please provide a helpful summarization in one paragraph and a solution. The solution should be presented in a to the point and compact as possible:"""
+    instruction = """You are a helpful java expert. Here follows a java error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution.
+    The solution should be presented to the point and as compact as possible."""
 
     template = """This is the java traceback:
             >>>
@@ -131,8 +131,7 @@ class AnalyserJava(Analyser):
 
 class AnalyserPython(Analyser):
     instruction = """You are a helpful python expert. Here follows a python error traceback where similar lines has been removed for brevity, please provide a helpful summarization in one paragraph and a solution. 
-        The solution should be presented in a to the point and compact as possible:
-        """
+    The solution should be presented to the point and as compact as possible."""
 
     template = """This is the python traceback:
             >>>
