@@ -1,3 +1,5 @@
+import logging
+
 import requests
 from fastapi import HTTPException
 from jose import jwt
@@ -5,12 +7,16 @@ from jose import jwt
 region = 'eu-north-1'
 userPoolId = 'eu-north-1_5614uLBuF'
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def decode_token(token):
     key = get_public_key(token)
     try:
         payload = jwt.decode(token, key, algorithms=['RS256'])
-    except jwt.JWTError:
+    except jwt.JWTError as e:
+        logger.info(f"JWT token error: {e}")
         raise HTTPException(status_code=403, detail="Invalid token")
     return payload
 
