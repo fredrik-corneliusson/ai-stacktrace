@@ -2,6 +2,7 @@ import logging
 
 import boto3
 from dotenv import load_dotenv
+# from pydantic import BaseModel
 from starlette.websockets import WebSocketDisconnect
 
 load_dotenv()
@@ -33,6 +34,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -78,7 +80,9 @@ async def websocket_endpoint(websocket: WebSocket):
         logger.info(f"Socket disconnected, info: {e}")
         await websocket.close()
 
+
 cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
+
 
 @app.get("/get_user_info")
 async def get_user_info(request: Request):
@@ -86,19 +90,19 @@ async def get_user_info(request: Request):
     access_token = await _get_auth_token(request, True)
 
     try:
-        response = cognito_client.get_user(
-            AccessToken=access_token
-        )
+        response = cognito_client.get_user(AccessToken=access_token)
         logger.info(response['UserAttributes'])
         # covert list of Name:Value objects to dict
         return {item['Name']: item['Value'] for item in response['UserAttributes']}
-    except cognito_client.exceptions.NotAuthorizedException:
-        return {"error": "NotAuthorizedException - Invalid Access Token"}
+    except cognito_client.exceptions.NotAuthorizedException as e:
+        logger.info(f"Failed to get_user from cognito: {e}")
+        raise HTTPException(status_code=403, detail="NotAuthorizedException - Invalid Access Token")
+
 
 @app.get("/logout")
 async def logout(request: Request):
     logger.info(f"logging out..")
-    access_token = await _get_auth_token(request)
+    access_token = await _get_auth_token(request, verify=True)
     logger.info(f"logging out {access_token}")
 
     try:
@@ -118,10 +122,14 @@ async def _get_auth_token(request, verify=False):
         access_token = auth_header.split(" ")[1]
     else:
         raise HTTPException(status_code=401, detail="No Authorization token provided")
-    
-    if not verify:
-        return access_token
 
+    if verify:
+        await _verify_access_token(access_token)
+
+    return access_token
+
+
+async def _verify_access_token(access_token):
     # Verify the token (This is a simplification, make sure to handle exceptions in real code)
     try:
         payload = decode_token(access_token)
@@ -133,4 +141,32 @@ async def _get_auth_token(request, verify=False):
         logger.info(f"Failed to decode token reason: {e}")
         raise HTTPException(status_code=401, detail="Bad Authorization token")
 
-    return access_token
+
+# class EmailSchema(BaseModel):
+#     name: str
+#     email: str
+#     message: str
+#
+#
+# @app.post("/send-email")
+# async def send_email(email: EmailSchema):
+#     client = boto3.client("ses")
+#
+#     response = client.send_email(
+#         Destination={
+#             'ToAddresses': ["bitflip.guru@proton.me"],
+#         },
+#         Message={
+#             'Body': {
+#                 'Text': {
+#                     'Data': f"Name: {email.name}\nEmail: {email.email}\nMessage: {email.message}"
+#                 },
+#             },
+#             'Subject': {
+#                 'Data': "Contact Form Message",
+#             },
+#         },
+#         Source="bitflip.guru@proton.me"
+#     )
+#     logger.info(f"sent mail, ses response: {response}")
+#     return {"message": "Email sent successfully!"}

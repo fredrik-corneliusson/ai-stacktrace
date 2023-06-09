@@ -12,6 +12,7 @@
 
 	<footer>
 		<p>bitflip.guru</p>
+<!--		<p>Contact: <a href="/contact">bitflip.guru</a></p>-->
 	</footer>
 </div>
 

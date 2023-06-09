@@ -3,10 +3,32 @@
 	import {loginStatus, updateUserStore} from './userStore';
 	import {onMount} from "svelte";
 	import {goto} from "$app/navigation";
+	import {PUBLIC_FASTAPI_BASE} from "$env/static/public";
 
-	onMount(() => {
+	onMount(async () => {
+		await validateToken();
 		updateUserStore();
 	});
+
+	async function validateToken() {
+		// verify that token is valid, remove it from local store if it is not
+		let token = localStorage.getItem("token");
+		if (token !== null) {
+
+			const res = await fetch(`${PUBLIC_FASTAPI_BASE}/get_user_info`, {
+				headers: {
+					'Authorization': `Bearer ${token}`
+				}
+			});
+
+			// If the token is invalid, clear it and the old user_details
+			if (res.status !== 200) {
+				localStorage.removeItem("token");
+				localStorage.removeItem("user_details");
+			}
+		}
+	}
+
 	// Navigate to login
 	function navigateToLogin() {
 		goto('/login');
