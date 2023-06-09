@@ -53,14 +53,14 @@ async def websocket_endpoint(websocket: WebSocket):
     # payload = jwt.decode(token, os.getenv('JWT_SECRET'), algorithms=['RS256'])
     try:
         payload = decode_token(token)
-        print(payload)
+        logger.debug(payload)
     except HTTPException as e:
-        print(e)
+        logger.info(f"Websocket got invalid token, reason: {e}")
         await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": "Invalid token"})
         await websocket.close()
         raise
     except Exception as e:
-        print(e)
+        logger.info(f"Websocket got bad token, reason: {e}")
         await websocket.send_json({'status': 'error', "status_code": 500, "message": f"Exception: {e}"})
         await websocket.close()
         raise
@@ -83,8 +83,7 @@ cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
 @app.get("/get_user_info")
 async def get_user_info(request: Request):
     logger.info("Getting user info")
-    access_token = await _get_auth_token(request)
-
+    access_token = await _get_auth_token(request, True)
 
     try:
         response = cognito_client.get_user(
@@ -113,10 +112,25 @@ async def logout(request: Request):
         return {"error": "NotAuthorizedException - Invalid Access Token"}
 
 
-async def _get_auth_token(request):
+async def _get_auth_token(request, verify=False):
     auth_header = request.headers.get('Authorization')
     if auth_header:
         access_token = auth_header.split(" ")[1]
     else:
         raise HTTPException(status_code=401, detail="No Authorization token provided")
+    
+    if not verify:
+        return access_token
+
+    # Verify the token (This is a simplification, make sure to handle exceptions in real code)
+    try:
+        payload = decode_token(access_token)
+        logger.info(payload)
+    except HTTPException as e:
+        logger.info(f"Invalid token. Reason: {e}")
+        raise
+    except Exception as e:
+        logger.info(f"Failed to decode token reason: {e}")
+        raise HTTPException(status_code=401, detail="Bad Authorization token")
+
     return access_token
