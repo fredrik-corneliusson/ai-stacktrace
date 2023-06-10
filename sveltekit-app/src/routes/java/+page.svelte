@@ -105,7 +105,7 @@
         possible solution.
     </p>
     <!--    <label for="stacktrace-area">Stacktrace</label>-->
-    <textarea disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
+    <textarea wrap="off" disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
     <p></p>
     <div class="button-container">
         <button class="btn" disabled='{loading || textAreaValue.length < 10}' on:click|preventDefault={sendText} title="Run analysis">▶️ Run analysis</button>
@@ -128,16 +128,21 @@
 <style>
     .stacktrace-main-column {
         display: flex;
-        max-width: 48rem;
+        max-width: 68rem;
         flex: 0;
         flex-direction: column;
         justify-content: center;
         margin: 0 auto;
     }
 
+    #stacktrace-area {
+        overflow-x: auto;
+    }
+
     .button-container {
         display: flex;
     }
+
 
     .btn {
         margin-right: 1rem;  /* Adjust the value as needed */
@@ -158,6 +163,12 @@
     }
 
     .analysis-result {
+        font-size: large;
+        border: #ffffff29;
+        border-style: groove;
+        padding: 1rem;
+        margin-top: 30px;
+        background: #ffffff24;
     }
 
 </style>
