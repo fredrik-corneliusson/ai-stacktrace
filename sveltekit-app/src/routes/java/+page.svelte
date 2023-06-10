@@ -104,15 +104,14 @@
         Paste a java stack-trace and click <strong>Run analysis</strong> to provide a short summary of the error and
         possible solution.
     </p>
-    <!--    <label for="stacktrace-area">Stacktrace</label>-->
-    <textarea wrap="off" disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
-    <p></p>
     <div class="button-container">
-        <button class="btn" disabled='{loading || textAreaValue.length < 10}' on:click|preventDefault={sendText} title="Run analysis">▶️ Run analysis</button>
+        <button class="btn" disabled='{loading || textAreaValue.length < 10}' on:click|preventDefault={sendText} title="Run analysis">▶️ AI Analyze</button>
         <button class="btn button-as-text" disabled='{loading}' on:click={pasteFromClipboard} title="Clear and Paste Clipboard Content">📋</button>
         <button class="btn button-as-text" disabled='{loading}' on:click={() => textAreaValue = ''} title="Clear Textarea" >🗑️️</button>
         <button class="last-button" disabled='{loading}' on:click|preventDefault={loadExampleText} title="Load example">Load example</button>
     </div>
+    <!--    <label for="stacktrace-area">Stacktrace</label>-->
+    <textarea wrap="off" disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
     <div class="analysis-result">
         {#each messageGroups as group, i (i)}
             <p>
@@ -137,10 +136,12 @@
 
     #stacktrace-area {
         overflow-x: auto;
+        margin-top: 1rem;
     }
 
     .button-container {
         display: flex;
+        margin-top: 0.3rem;
     }
 
 
@@ -167,7 +168,7 @@
         border: #ffffff29;
         border-style: groove;
         padding: 1rem;
-        margin-top: 30px;
+        margin-top: 1rem;
         background: #ffffff24;
     }
 
