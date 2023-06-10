@@ -1,6 +1,7 @@
 import logging
 
 import boto3
+from cachetools import cached, TTLCache
 from dotenv import load_dotenv
 # from pydantic import BaseModel
 from starlette.websockets import WebSocketDisconnect
@@ -46,11 +47,31 @@ async def websocket_endpoint(websocket: WebSocket):
     message = json.loads(data)
     token = message.get('token')
 
+    user_info = await _validate_websocket_token(token, websocket)
+
+    try:
+        language = await websocket.receive_text()
+        data = await websocket.receive_text()
+        logger.info(f"Got {language} stacktrace to analyse: {data}")
+        logger.debug(f"Stacktrace data: {data}")
+        try:
+            async for message in analyze(user_info, language, data, 0.5, 2, 0.0):
+                await websocket.send_json(message.dict())
+        except AnalyzeException as e:
+            await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": f"{e}"})
+
+        await websocket.send_json({'status': 'completed'})
+        await websocket.close()
+    except WebSocketDisconnect as e:
+        logger.info(f"Socket disconnected, info: {e}")
+        await websocket.close()
+
+
+async def _validate_websocket_token(token, websocket):
     if not token:
         await websocket.send_json({'status': 'error', "status_code": 403, "message": "No token"})
         await websocket.close(code=1008)
         raise HTTPException(status_code=403, detail="Invalid request")
-
     # Verify the token (This is a simplification, make sure to handle exceptions in real code)
     # payload = jwt.decode(token, os.getenv('JWT_SECRET'), algorithms=['RS256'])
     try:
@@ -66,26 +87,19 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.send_json({'status': 'error', "status_code": 500, "message": f"Exception: {e}"})
         await websocket.close()
         raise
-
     try:
-        language = await websocket.receive_text()
-        data = await websocket.receive_text()
-        logger.info(f"Got {language} stacktrace to analyse: {data}")
-        logger.debug(f"Stacktrace data: {data}")
-        try:
-            async for message in analyze(language, data, 0.5, 2, 0.0):
-                await websocket.send_json(message.dict())
-        except AnalyzeException as e:
-            await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": f"{e}"})
-
-        await websocket.send_json({'status': 'completed'})
+        user_info = _token_to_user_info(token)
+    except cognito_client.exceptions.NotAuthorizedException as e:
+        logger.info(f"Failed to get_user from cognito: {e}")
+        await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": "Invalid token"})
         await websocket.close()
-    except WebSocketDisconnect as e:
-        logger.info(f"Socket disconnected, info: {e}")
-        await websocket.close()
+        raise
+    logger.info(f"user info for token: {user_info}")
+    return user_info
 
 
-cognito_client = boto3.client('cognito-idp', region_name='eu-north-1')
+region_name = 'eu-north-1'
+cognito_client = boto3.client('cognito-idp', region_name=region_name)
 
 
 @app.get("/get_user_info")
@@ -94,13 +108,18 @@ async def get_user_info(request: Request):
     access_token = await _get_auth_token(request, True)
 
     try:
-        response = cognito_client.get_user(AccessToken=access_token)
-        logger.info(response['UserAttributes'])
-        # covert list of Name:Value objects to dict
-        return {item['Name']: item['Value'] for item in response['UserAttributes']}
+        return _token_to_user_info(access_token)
     except cognito_client.exceptions.NotAuthorizedException as e:
         logger.info(f"Failed to get_user from cognito: {e}")
         raise HTTPException(status_code=403, detail="NotAuthorizedException - Invalid Access Token")
+
+@cached(cache=TTLCache(maxsize=128, ttl=300))
+def _token_to_user_info(access_token: str) -> dict:
+    logger.info("Getting user info for token from cognito")
+    response = cognito_client.get_user(AccessToken=access_token)
+    logger.info(response['UserAttributes'])
+    # covert list of Name:Value objects to dict
+    return {item['Name']: item['Value'] for item in response['UserAttributes']}
 
 
 @app.get("/logout")

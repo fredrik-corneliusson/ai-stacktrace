@@ -13,6 +13,8 @@ levenshtein
 tiktoken
 # for test-ws.py
 websockets
+cachetools
+
 # for auth
 cryptography
 python-jose

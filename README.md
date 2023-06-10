@@ -23,6 +23,8 @@ pip install -r requirements.txt
 Setup .env file:
 ```
 OPENAI_API_KEY=...
+JWT_SECRET=...
+APP_ENV=dev or prod
 ```
 ### Start
 ```

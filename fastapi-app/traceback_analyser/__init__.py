@@ -5,6 +5,7 @@ from typing import AsyncGenerator, AsyncIterable
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from pydantic import BaseModel
 
+from db import UsersDB
 from .process_tb import FilterTracebackJava
 
 from langchain import PromptTemplate
@@ -21,18 +22,49 @@ VERBOSE_CHAT_LOGGING = False
 DETAILED_RESPONSES = False
 
 
+class Quotas:
+    MAX_TOKEN_USAGE = 40000
+    MAX_REQUESTS = 200
+
+    def check(self, user_info):
+        user_item = user_db.get_or_create_user(user_info['email'])
+        logger.info(f"user_item: {user_item}")
+        if self.MAX_TOKEN_USAGE <= user_item['token_usage']:
+            raise AnalyzeException(
+                f"Sorry, Token usage quota for user {user_info['email']} reached. Used: {user_item['token_usage']} Limt: {Quotas.MAX_TOKEN_USAGE}",
+                413)
+        elif self.MAX_REQUESTS <= user_item['requests_count']:
+            raise AnalyzeException(
+                f"Sorry, Max requests quota for user {user_info['email']} reached. Used: {user_item['requests_count']} Limt: {Quotas.MAX_REQUESTS}",
+                413)
+
+    def add_usage(self, user_info, analyser: "Analyser"):
+        # update token usage
+        add_usage_response = user_db.add_usage(
+            user_info['email'],
+            analyser.input_token_count + analyser.generated_token_count)
+        logger.info(f"add_usage_response: {add_usage_response}")
+
+
+
 class Message(BaseModel):
     status: str
     stage: str
     message: str
 
+
 class AnalyzeException(Exception):
-    def __init__(self, message:str, status_code: int):
+    def __init__(self, message: str, status_code: int):
         super().__init__(message)
         self.status_code = status_code
 
 
+user_db = UsersDB()
+quotas = Quotas()
+
+
 async def analyze(
+        user_info: dict,
         language: str,
         trace: str,
         threshold: float,
@@ -44,6 +76,8 @@ async def analyze(
     This is to reduce the amount sent to for analysis.
     """
     logger.debug("analyze...")
+    quotas.check(user_info)
+
     status = "RUNNING"
     if DETAILED_RESPONSES:
         yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
@@ -69,6 +103,9 @@ async def analyze(
         yield Message(status="STREAMING_RESPONSE", stage="ANAYLSIS_RUNNING", message=response)
 
     await asyncio.sleep(0)
+
+    # update token usage
+    quotas.add_usage(user_info, analyser)
 
 
 class Analyser:
@@ -119,22 +156,23 @@ class Analyser:
             SystemMessage(content=self.instruction),
             HumanMessage(content=text)
         ]
-        input_token_count = chat.get_num_tokens_from_messages(messages)
-        if input_token_count > self.INPUT_MAX_TOKENS:
+        self.input_token_count = chat.get_num_tokens_from_messages(messages)
+        if self.input_token_count > self.INPUT_MAX_TOKENS:
             raise AnalyzeException("Input text to large", 413)
 
         # Begin a task that runs in the background.
         task = asyncio.create_task(chat.agenerate(messages=[messages]))
-        generated_token_count = 0
+        self.generated_token_count = 0
 
         async for token in callback.aiter():
             logger.debug(f"data: {token}")
-            generated_token_count += 1
+            self.generated_token_count += 1
             yield token
 
         await task
-        token_usage = input_token_count + generated_token_count
-        logger.info(f"Token count: input: {input_token_count} generated: {generated_token_count} total: {token_usage}")
+        token_usage = self.input_token_count + self.generated_token_count
+        logger.info(
+            f"Token count: input: {self.input_token_count} generated: {self.generated_token_count} total: {token_usage}")
 
 
 class AnalyserJava(Analyser):
