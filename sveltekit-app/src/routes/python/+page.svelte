@@ -9,13 +9,11 @@
     }
 
     let loading = false;
-    let messages = [];
     let messageGroups = [];
     const language = "python";
 
     function sendText() {
         loading = true;
-        messages = [];
         messageGroups = [];
         const token = localStorage.getItem('token');
         let ws = new WebSocket(PUBLIC_WEBSOCKET);
@@ -28,13 +26,12 @@
 
             // Set up timeout
             setTimeout(() => {
-                if (messages.length === 0) {
+                if (messageGroups.length === 0) {
                     loading = false;
                     ws.close();
                     console.log("Timeout, no message received");
-                    messages.push({status: "error", message: "Timeout, no message received"});
                 }
-            }, 40000);  // 30 seconds timeout
+            }, 30000);  // 30 seconds timeout
 
         };
 
@@ -60,9 +57,12 @@
                     // Redirect to login
                     window.location.href = '/login';
 
+                } else if (message.status_code === 413) {
+                    console.log("Input to large");
+                    messageGroups = [...messageGroups, {status: message.status, messages: [message]}];
                 }
+
             } else {
-                messages = [...messages, message];
                 // Group messages
                 if (messageGroups.length === 0 ||
                     messageGroups[messageGroups.length - 1].status !== message.status ||

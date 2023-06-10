@@ -9,6 +9,8 @@ python-dotenv
 langchain
 openai
 levenshtein
+# for token counting
+tiktoken
 # for test-ws.py
 websockets
 # for auth

@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from auth import decode_token
 
-from traceback_analyser import analyze
+from traceback_analyser import analyze, AnalyzeException
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -72,8 +72,12 @@ async def websocket_endpoint(websocket: WebSocket):
         data = await websocket.receive_text()
         logger.info(f"Got {language} stacktrace to analyse: {data}")
         logger.debug(f"Stacktrace data: {data}")
-        async for message in analyze(language, data, 0.5, 2, 0.0):
-            await websocket.send_json(message.dict())
+        try:
+            async for message in analyze(language, data, 0.5, 2, 0.0):
+                await websocket.send_json(message.dict())
+        except AnalyzeException as e:
+            await websocket.send_json({'status': 'error', "status_code": e.status_code, "message": f"{e}"})
+
         await websocket.send_json({'status': 'completed'})
         await websocket.close()
     except WebSocketDisconnect as e:
