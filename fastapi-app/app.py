@@ -32,11 +32,6 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -113,6 +108,7 @@ async def get_user_info(request: Request):
         logger.info(f"Failed to get_user from cognito: {e}")
         raise HTTPException(status_code=403, detail="NotAuthorizedException - Invalid Access Token")
 
+
 @cached(cache=TTLCache(maxsize=128, ttl=300))
 def _token_to_user_info(access_token: str) -> dict:
     logger.info("Getting user info for token from cognito")
@@ -163,7 +159,6 @@ async def _verify_access_token(access_token):
     except Exception as e:
         logger.info(f"Failed to decode token reason: {e}")
         raise HTTPException(status_code=401, detail="Bad Authorization token")
-
 
 # class EmailSchema(BaseModel):
 #     name: str
