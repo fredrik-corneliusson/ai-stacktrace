@@ -82,7 +82,7 @@ class Analyser:
             >>>
             """
 
-    INPUT_MAX_TOKENS = 3000
+    INPUT_MAX_TOKENS = 2000
     OUTPUT_MAX_TOKENS = 1000
     REQUEST_TIMEOUT = 30
     MODEL_NAME = "gpt-3.5-turbo"

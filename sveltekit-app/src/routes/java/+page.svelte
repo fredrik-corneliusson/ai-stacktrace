@@ -3,6 +3,15 @@
 
     let textAreaValue = '';
 
+    async function pasteFromClipboard() {
+        textAreaValue = '';
+        try {
+            textAreaValue = await navigator.clipboard.readText();
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+        }
+    }
+
     async function loadExampleText() {
         const response = await fetch('/example-tb-java.txt');
         textAreaValue = await response.text();
@@ -98,9 +107,11 @@
     <!--    <label for="stacktrace-area">Stacktrace</label>-->
     <textarea disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
     <p></p>
-    <div>
-        <button disabled='{loading}' on:click|preventDefault={sendText}>Run analysis</button>
-        <button disabled='{loading}' on:click|preventDefault={loadExampleText}>Load example</button>
+    <div class="button-container">
+        <button class="btn" disabled='{loading || textAreaValue.length < 10}' on:click|preventDefault={sendText} title="Run analysis">▶️ Run analysis</button>
+        <button class="btn button-as-text" disabled='{loading}' on:click={pasteFromClipboard} title="Clear and Paste Clipboard Content">📋</button>
+        <button class="btn button-as-text" disabled='{loading}' on:click={() => textAreaValue = ''} title="Clear Textarea" >🗑️️</button>
+        <button class="last-button" disabled='{loading}' on:click|preventDefault={loadExampleText} title="Load example">Load example</button>
     </div>
     <div class="analysis-result">
         {#each messageGroups as group, i (i)}
@@ -117,11 +128,33 @@
 <style>
     .stacktrace-main-column {
         display: flex;
-        /*max-width: 48rem;*/
+        max-width: 48rem;
         flex: 0;
         flex-direction: column;
         justify-content: center;
         margin: 0 auto;
+    }
+
+    .button-container {
+        display: flex;
+    }
+
+    .btn {
+        margin-right: 1rem;  /* Adjust the value as needed */
+    }
+
+    .button-as-text {
+        background: none;
+        color: inherit;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        outline: inherit;
+    }
+
+    .last-button {
+        margin-left: auto;
     }
 
     .analysis-result {
