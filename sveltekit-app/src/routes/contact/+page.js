@@ -5,4 +5,4 @@ import { dev } from '$app/environment';
 export const csr = dev;
 
 // do not prerender
-export const prerender = false;
+export const prerender = true;
