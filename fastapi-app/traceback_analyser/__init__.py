@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from .analyser import Analyser, AnalyserJava, AnalyserPython
 from .exceptions import AnalyzeException
-from .process_tb import FilterTracebackJava
+from .process_tb import FilterTracebackJava, FilterTracebackPython
 
 from .quotas import Quotas
 
@@ -44,8 +44,21 @@ async def analyze(
     if DETAILED_RESPONSES:
         yield Message(status=status, stage="STACKTRACE_FILTERING", message="Filtering traceback...")
         await asyncio.sleep(0)
-    processed_trace = FilterTracebackJava().filter(trace, similarity_threshold=threshold,
+    if language.lower() == 'java':
+        tb_filter = FilterTracebackJava()
+        analyser = AnalyserJava()
+    elif language.lower() == 'python':
+        tb_filter = FilterTracebackPython()
+        analyser = AnalyserPython()
+    else:
+        tb_filter = FilterTracebackJava()
+        # Generic
+        analyser = Analyser()
+
+
+    processed_trace = tb_filter.filter(trace, similarity_threshold=threshold,
                                                    max_similar_lines=max_similar_lines)
+
     if DETAILED_RESPONSES:
         yield Message(status=status, stage="STACKTRACE_FILTRED", message=processed_trace)
         await asyncio.sleep(0)
@@ -53,13 +66,6 @@ async def analyze(
         await asyncio.sleep(0)
 
     logger.debug("Sending chat prompt and streaming response...")
-    if language.lower() == "java":
-        analyser = AnalyserJava()
-    elif language.lower() == "python":
-        analyser = AnalyserPython()
-    else:
-        # Generic
-        analyser = Analyser()
 
     async for response in analyser.send_to_openai_chat(processed_trace, temprature=temprature):
         yield Message(status="STREAMING_RESPONSE", stage="ANAYLSIS_RUNNING", message=response)
@@ -68,5 +74,3 @@ async def analyze(
 
     # update token usage
     quotas.add_usage(user_info, analyser)
-
-

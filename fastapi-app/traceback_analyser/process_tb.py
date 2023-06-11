@@ -5,6 +5,8 @@ from pathlib import Path
 
 from Levenshtein import ratio
 
+from traceback_analyser.extract_tb import extract_stacktrace
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -14,7 +16,7 @@ class FilterTraceback:
         pass
 
 
-class FilterTracebackJava:
+class FilterTracebackJava(FilterTraceback):
     _re_remove_line_nr = re.compile(r':\d+\)$')
 
     def filter(self, traceback: str, similarity_threshold=0.6, max_similar_lines=3, runs=2) -> str:
@@ -75,7 +77,7 @@ class FilterTracebackJava:
         return filtred_traceback
 
 
-class FilterTracebackPython:
+class FilterTracebackPython(FilterTraceback):
     # TODO: remove/simplifiy paths in tracebacks.
     _re_remove_line_nr = re.compile(r', line \d+, ')
 
@@ -89,9 +91,9 @@ class FilterTracebackPython:
         :return: filtred traceback
         """
         logger.info(f"filtering traceback of length {len(traceback)}")
+        traceback = extract_stacktrace(traceback)
         traceback = textwrap.dedent(traceback)
         traceback = self._remove_file_line_numbers(traceback)
-        print(traceback)
         # remove empty lines
         traceback = '\n'.join(l for l in traceback.splitlines() if l.strip())
 
@@ -100,6 +102,7 @@ class FilterTracebackPython:
             traceback = self._filter_traceback(traceback, similarity_threshold=similarity_threshold,
                                                max_similar_lines=max_similar_lines)
             logger.info(f"filter traceback length {len(traceback)}")
+        logger.info(traceback)
 
         return traceback
 
@@ -146,6 +149,6 @@ if __name__ == '__main__':
     print('-' * 120)
 
     EXAMPLE_TB_PYTHON = (Path(__file__).parent.parent.parent / 'sveltekit-app/static/example-tb-python.txt').read_text()
-    out = FilterTracebackJava().filter(EXAMPLE_TB_PYTHON, similarity_threshold=0.6, max_similar_lines=3)
+    out = FilterTracebackPython().filter(EXAMPLE_TB_PYTHON, similarity_threshold=0.6, max_similar_lines=3)
     print(out)
     print('-' * 120)
