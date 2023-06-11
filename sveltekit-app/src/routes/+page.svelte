@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>Home</title>
+	<title>AI-Powered Stacktrace Analyzer</title>
 	<meta name="description"
 		  content="Analyze stacktrace and provide a short summary of the error and possible solutions." />
 </svelte:head>
