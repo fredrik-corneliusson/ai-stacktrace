@@ -114,7 +114,7 @@
         <button class="last-button" disabled='{loading}' on:click|preventDefault={loadExampleText} title="Load example">Load example</button>
     </div>
     <!--    <label for="stacktrace-area">Stacktrace</label>-->
-    <textarea wrap="off" disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" cols="120"></textarea>
+    <textarea wrap="off" disabled='{loading}' id="stacktrace-area" bind:value={textAreaValue} rows="10" ></textarea>
     <div class="analysis-result">
         {#each messageGroups as group, i (i)}
             <p>
@@ -129,17 +129,13 @@
 
 <style>
     .stacktrace-main-column {
-        display: flex;
-        max-width: 68rem;
-        flex: 0;
-        flex-direction: column;
-        justify-content: center;
-        margin: 0 auto;
     }
 
     #stacktrace-area {
         overflow-x: auto;
         margin-top: 1rem;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .button-container {
