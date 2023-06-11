@@ -84,7 +84,8 @@
         {/if}
 
     </div>
-    {#if $loginStatus === 'Not logged in' && !$page.url.pathname.startsWith('/contact')}
+    {#if $loginStatus === 'Not logged in' && !($page.url.pathname.endsWith('/')
+        || $page.url.pathname.startsWith('/contact'))}
         <div class="overlay">
             <button on:click={navigateToLogin}>Login</button>
         </div>
